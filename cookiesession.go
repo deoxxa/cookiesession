@@ -93,14 +93,14 @@ func New(name, secret string, ttl time.Duration) *Store {
 func (s *Store) Get(r *http.Request) Session {
 	c, err := r.Cookie(s.Name)
 	if err != nil {
-		return Session{SID: uuid.Must(uuid.NewV4())}
+		return Session{SID: uuid.NewV4()}
 	} else if c == nil {
-		return Session{SID: uuid.Must(uuid.NewV4())}
+		return Session{SID: uuid.NewV4()}
 	}
 
 	encrypted, err := base64.StdEncoding.DecodeString(c.Value)
 	if err != nil {
-		return Session{SID: uuid.Must(uuid.NewV4())}
+		return Session{SID: uuid.NewV4()}
 	}
 
 	var nonce [24]byte
@@ -108,16 +108,16 @@ func (s *Store) Get(r *http.Request) Session {
 
 	buf, ok := secretbox.Open(nil, encrypted[24:], &nonce, &s.Key)
 	if !ok {
-		return Session{SID: uuid.Must(uuid.NewV4())}
+		return Session{SID: uuid.NewV4()}
 	}
 
 	var ss Session
 	if err := ss.UnmarshalBinary(buf); err != nil {
-		return Session{SID: uuid.Must(uuid.NewV4())}
+		return Session{SID: uuid.NewV4()}
 	}
 
 	if time.Now().Sub(ss.Time) > s.TTL {
-		return Session{SID: uuid.Must(uuid.NewV4())}
+		return Session{SID: uuid.NewV4()}
 	}
 
 	return ss
